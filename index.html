@@ -8,52 +8,43 @@
     <meta property="og:image" content="https://agonacat.github.io/smartdetox/icon.png">
 </head>
 <body>
-    <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('id');
-    const pkgName = "com.onedaysoft.digiband"; 
+   <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id');
+        const pkgName = "com.onedaysoft.digiband";
 
-    // 모바일 기기 체크
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    if (userId) {
-        const playStoreUrl = "https://play.google.com/store/apps/details?id=" + pkgName;
-
-        if (isAndroid) {
-            // [안드로이드] OS가 직접 앱 실행 또는 스토어 이동을 제어하는 표준 Intent 방식 (타이머 불필요)
-            const intentUrl = "intent://shareid?id=" + userId + "#Intent;scheme=" + pkgName + ";package=" + pkgName + ";S.browser_fallback_url=" + encodeURIComponent(playStoreUrl) + ";end;";
-            window.location.href = intentUrl;
-
-        } else if (isMobile) {
-            // [기타 모바일(iOS 등)] 앱 스킴 호출 및 타이머 제어
+        if (userId) {
+            // 안드로이드 intent (자동 폴백 기능 제거하여 중복 실행 방지)
+            const intentUrl = "intent://shareid?id=" + userId + "#Intent;scheme=" + pkgName + ";package=" + pkgName + ";end;";
+            // 일반 스킴 (기타 기기용)
             const appScheme = pkgName + "://shareid?id=" + userId;
-            
-            // 타이머 변수 저장
+            const playStoreUrl = "https://play.google.com/store/apps/details?id=" + pkgName;
+
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            const goUrl = isAndroid ? intentUrl : appScheme;
+
+            // 1. 스토어 이동 타이머 설정 (1.5초)
             let fallbackTimer = setTimeout(function() {
                 window.location.href = playStoreUrl;
             }, 1500);
 
-            // 앱이 열려서 브라우저가 숨겨지면(백그라운드) 타이머 취소
+            // 2. 앱이 열려서 브라우저가 화면에서 사라지면 즉시 타이머 암살(취소)
+            const killTimer = function() {
+                clearTimeout(fallbackTimer);
+            };
+
+            window.addEventListener('blur', killTimer);
+            window.addEventListener('pagehide', killTimer);
             document.addEventListener('visibilitychange', function() {
-                if (document.hidden || document.visibilityState === 'hidden') {
-                    clearTimeout(fallbackTimer);
-                }
+                if (document.hidden) killTimer();
             });
 
-            window.location.href = appScheme;
+            // 3. 앱 실행 시도
+            window.location.href = goUrl;
 
         } else {
-            // [PC 접속] 
-            document.getElementById("msg").innerText = "모바일 환경에서 실행해 주세요.";
-            document.getElementById("qr-container").style.display = "block";
-            
-            const currentUrl = encodeURIComponent(window.location.href);
-            document.getElementById("qr-img").src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + currentUrl;
+            document.body.innerText = "잘못된 접근입니다.";
         }
-    } else {
-        document.getElementById("msg").innerText = "잘못된 접근입니다.";
-    }
-</script>
+    </script>
 </body>
 </html>

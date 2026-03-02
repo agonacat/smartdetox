@@ -2,29 +2,53 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Digiband</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>앱으로 연결 중...</title>
+    <style>
+        body { text-align: center; padding: 50px; font-family: sans-serif; }
+        #qr-container { display: none; margin-top: 20px; }
+        img { max-width: 250px; margin-top: 15px; }
+    </style>
 </head>
 <body>
+    <h3 id="msg">잠시만 기다려주세요...</h3>
+    
+    <div id="qr-container">
+        <p>스마트폰 카메라로 아래 QR 코드를 스캔해 주세요.</p>
+        <img id="qr-img" src="" alt="QR Code">
+    </div>
+
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('id');
-        // 고정된 패키지 명 사용
-        const pkgName = "com.onedaysoft.digiband"; 
+        const pkgName = "com.onedaysoft.digiband"; // 실제 패키지명 입력
+
+        // 현재 접속한 기기가 모바일인지 확인하는 정규식
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         if (userId) {
-            // AndroidManifest와 정확히 일치해야 함
-            const appScheme = pkgName + "://shareid?id=" + userId;
-            const playStoreUrl = "https://play.google.com/store/apps/details?id=" + pkgName;
+            if (isMobile) {
+                // [모바일 접속] : 기존처럼 앱 실행 또는 스토어로 즉시 이동
+                document.getElementById("msg").innerText = "앱으로 이동 중입니다...";
+                const appScheme = pkgName + "://shareid?id=" + userId;
+                const playStoreUrl = "https://play.google.com/store/apps/details?id=" + pkgName;
 
-            // 1. 앱 실행 시도
-            window.location.href = appScheme;
+                window.location.href = appScheme;
+                setTimeout(function() {
+                    window.location.href = playStoreUrl;
+                }, 1500);
 
-            // 2. 앱이 없을 경우 1.5초 후 스토어로 이동
-            setTimeout(function() {
-                window.location.href = playStoreUrl;
-            }, 1000);
+            } else {
+                // [PC 접속] : 화면에 현재 주소의 QR 코드를 띄워줌
+                document.getElementById("msg").innerText = "모바일 환경에서 실행해 주세요.";
+                document.getElementById("qr-container").style.display = "block";
+                
+                // 무료 API를 활용해 현재 주소(window.location.href)를 QR 이미지로 변환
+                const currentUrl = encodeURIComponent(window.location.href);
+                document.getElementById("qr-img").src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + currentUrl;
+            }
         } else {
-            document.body.innerText = "데이터가 없습니다.";
+            document.getElementById("msg").innerText = "잘못된 접근입니다.";
         }
     </script>
 </body>

@@ -2,27 +2,29 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Redirecting...</title>
+    <title>Digiband</title>
 </head>
 <body>
     <script>
-        // 1. URL에서 id 파라미터 추출 (예: ?id=user123)
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('id');
+        // 고정된 패키지 명 사용
+        const pkgName = "com.onedaysoft.digiband"; 
 
         if (userId) {
-            const appScheme = "myapp://share?id=" + userId;
-            const playStoreUrl = "https://play.google.com/store/apps/details?id=com.your.package.name";
+            // AndroidManifest와 정확히 일치해야 함
+            const appScheme = pkgName + "://shareid?id=" + userId;
+            const playStoreUrl = "https://play.google.com/store/apps/details?id=" + pkgName;
 
-            // 2. 앱 실행 시도
+            // 1. 앱 실행 시도
             window.location.href = appScheme;
 
-            // 3. 앱이 없으면 1.5초 뒤 플레이스토어로 이동
+            // 2. 앱이 없을 경우 1.5초 후 스토어로 이동
             setTimeout(function() {
                 window.location.href = playStoreUrl;
-            }, 1500);
+            }, 1000);
         } else {
-            document.body.innerText = "잘못된 접근입니다.";
+            document.body.innerText = "데이터가 없습니다.";
         }
     </script>
 </body>

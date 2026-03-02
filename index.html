@@ -26,7 +26,7 @@
             // 1. 스토어 이동 타이머 설정 (1.5초)
             let fallbackTimer = setTimeout(function() {
                 window.location.href = playStoreUrl;
-            }, 1500);
+            }, 3000);
 
             // 2. 앱이 열려서 브라우저가 화면에서 사라지면 즉시 타이머 암살(취소)
             const killTimer = function() {
